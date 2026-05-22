@@ -1,0 +1,4 @@
+[submodule "kwwk-computer-use-core"]
+	path = kwwk-computer-use-core
+	url = https://github.com/EYHN/kwwk-computer-use-core.git
+	branch = main
