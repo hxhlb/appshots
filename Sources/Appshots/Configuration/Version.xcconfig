@@ -1,5 +1,5 @@
 // Version.xcconfig
 // Appshots
 
-MARKETING_VERSION = 0.1.0
+MARKETING_VERSION = 0.1.1
 CURRENT_PROJECT_VERSION = 1
