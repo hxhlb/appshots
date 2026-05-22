@@ -73,8 +73,10 @@ jobs:
             -derivedDataPath .build/DerivedData \
             -clonedSourcePackagesDirPath .build/SourcePackages
 
-      - name: Build, Sign, Notarize and Upload
+      - name: Build, Sign, Notarize and Package
         timeout-minutes: 45
+        env:
+          APPSHOTS_SKIP_R2_UPLOAD: "1"
         run: DevKit/Scripts/publish-with-build.sh
 
       - name: Extract version from app
@@ -94,6 +96,9 @@ jobs:
           name: Release ${{ steps.version.outputs.tag }}
           files: artifacts/Appshots.dmg
           generate_release_notes: true
+
+      - name: Upload Sparkle appcast and DMG to R2
+        run: DevKit/Scripts/publish-submit-r2.sh .build/Appshots.dmg
 
       - name: Upload xcodebuild log on failure
         if: failure()

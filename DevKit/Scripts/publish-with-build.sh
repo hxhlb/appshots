@@ -66,6 +66,11 @@ step_notarize() {
 }
 
 step_upload() {
+  if [[ "${APPSHOTS_SKIP_R2_UPLOAD:-0}" == "1" ]]; then
+    echo "[*] skipping R2 upload"
+    return 0
+  fi
+
   echo "[*] uploading to R2..."
   ./publish-submit-r2.sh "$DMG_PATH"
 }
@@ -79,8 +84,8 @@ main() {
   step_increment_build
   step_archive
   step_notarize
-  step_upload
   step_package_artifact
+  step_upload
   echo "[+] done"
 }
 
