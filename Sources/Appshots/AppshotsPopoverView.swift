@@ -11,6 +11,7 @@ struct AppshotsPopoverView: View {
             header
             permissions
             controls
+            shortcutSettings
             recentCaptures
             Spacer(minLength: 0)
             footer
@@ -23,9 +24,6 @@ struct AppshotsPopoverView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text("Appshots")
                 .font(.system(size: 20, weight: .semibold))
-            Text("Hotkey: Left Option + Right Option")
-                .font(.callout)
-                .foregroundStyle(.secondary)
             Text(model.statusMessage)
                 .font(.caption)
                 .foregroundStyle(model.isCapturing ? .blue : .secondary)
@@ -60,6 +58,36 @@ struct AppshotsPopoverView: View {
             .disabled(model.isCapturing)
             Spacer()
         }
+    }
+
+    private var shortcutSettings: some View {
+        HStack(alignment: .center, spacing: 12) {
+            VStack(alignment: .leading, spacing: 3) {
+                Text("Hotkey")
+                    .font(.callout.weight(.medium))
+                Text(model.hotKey.instructionText)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+
+            Spacer()
+
+            Picker("Hotkey", selection: $model.hotKey) {
+                ForEach(AppshotsHotKey.allCases) { hotKey in
+                    Text(hotKey.displayText)
+                        .tag(hotKey)
+                }
+            }
+            .labelsHidden()
+            .pickerStyle(.menu)
+            .controlSize(.small)
+            .frame(width: 112)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 9)
+        .background(Color.secondary.opacity(0.08))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
     @ViewBuilder
