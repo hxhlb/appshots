@@ -10,12 +10,25 @@ final class AppshotsModel: ObservableObject {
     @Published var isCapturing = false
     @Published var hasAccessibilityPermission = false
     @Published var hasScreenRecordingPermission = false
+    @Published var hotKey: AppshotsHotKey {
+        didSet {
+            guard oldValue != hotKey else { return }
+            UserDefaults.standard.set(hotKey.encodedString, forKey: Self.hotKeyDefaultsKey)
+            statusMessage = "Hotkey: \(hotKey.displayText)"
+        }
+    }
 
     weak var frontmostTracker: FrontmostAppTracker?
     var playCaptureAnimation: ((AppshotRecord) -> Void)?
 
     private let store = AppshotStore()
     private let maxRecentCaptures = 10
+    private static let hotKeyDefaultsKey = "AppshotsHotKey"
+
+    init() {
+        let rawHotKey = UserDefaults.standard.string(forKey: Self.hotKeyDefaultsKey)
+        hotKey = AppshotsHotKey.decode(from: rawHotKey)
+    }
 
     var latestCapture: AppshotRecord? {
         recentCaptures.first

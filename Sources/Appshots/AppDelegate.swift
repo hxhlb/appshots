@@ -1,4 +1,5 @@
 import AppKit
+import Combine
 import SwiftUI
 
 @MainActor
@@ -6,9 +7,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let model = AppshotsModel()
     private let frontmostTracker = FrontmostAppTracker()
     private let captureAnimator = AppshotCaptureAnimator()
-    private var hotKeyMonitor: OptionPairHotKeyMonitor?
+    private var hotKeyMonitor: AppshotsHotKeyMonitor?
     private var statusItem: NSStatusItem?
     private var popover: NSPopover?
+    private var cancellables = Set<AnyCancellable>()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         frontmostTracker.start()
@@ -24,6 +26,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         _ = AppshotsUpdateManager.shared
 
         setupStatusItem()
+        observeModel()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
             self?.setupHotKeyMonitor()
         }
@@ -64,13 +67,27 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func setupHotKeyMonitor() {
         guard hotKeyMonitor == nil else { return }
 
-        let monitor = OptionPairHotKeyMonitor { [weak self] in
-            Task { @MainActor in
-                self?.model.captureFrontmostApp()
+        let monitor = AppshotsHotKeyMonitor(
+            hotKey: model.hotKey,
+            onTrigger: { [weak self] in
+                Task { @MainActor in
+                    self?.model.captureFrontmostApp()
+                }
             }
-        }
+        )
         monitor.start()
         hotKeyMonitor = monitor
+    }
+
+    private func observeModel() {
+        model.$hotKey
+            .dropFirst()
+            .sink { [weak self] hotKey in
+                Task { @MainActor in
+                    self?.hotKeyMonitor?.updateHotKey(hotKey)
+                }
+            }
+            .store(in: &cancellables)
     }
 
     @objc
